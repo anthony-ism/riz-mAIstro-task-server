@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Task management MCP server using AWS Lambda and DynamoDB",
   "type": "module",
-  "main": "index.mjs",
+  "main": "src/index.mjs",
   "scripts": {
-    "start": "node index.mjs",
+    "start": "node src/index.mjs",
     "dev": "nodemon dev/local_server.mjs"
   },
   "dependencies": {

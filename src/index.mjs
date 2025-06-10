@@ -1,7 +1,7 @@
 import middy from '@middy/core';
 import httpErrorHandler from '@middy/http-error-handler';
 import mcpMiddleware from 'middy-mcp';
-import { createMcpServer } from './server/index.js';
+import { createMcpServer } from './server.mjs';
 
 // Create the MCP server with all task tools
 const server = createMcpServer();
