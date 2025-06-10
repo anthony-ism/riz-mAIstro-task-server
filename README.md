@@ -1,37 +1,85 @@
-# Simple Serverless FastApi Example
+# Task MCP Server
 
-## Installation
+A Model Context Protocol (MCP) server for managing user tasks using AWS Lambda and DynamoDB.
 
-### Setup Virtual Environment
+## Project Structure
 
-```shell
-source .venv/bin/activate
+```
+task-mcp-server/
+├── dev/
+│   └── local_server.mjs            # Local server for testing
+├── src/
+│   └── config.mjs                  # Configuration management
+│   └── db_client.mjs               # DynamoDB client setup
+│   └── lambda.js                   # Main Lambda handler
+│   └── task_model.mjs           # Task data model and database operations
+│   └── task_tools.js            # MCP tool definitions
+│   └── server.mjs                  # MCP server initialization
+├── package.json                    # Dependencies and scripts
+├── .env.example                    # Environment variables example
+└── README.md                       # This file
 ```
 
-### Install Dependencies
+## Features
 
-```shell
-uv sync
+The server provides the following MCP tools:
+
+- **get_task** - Retrieve a user's task
+- **update_task** - Update user task information
+- **add_interest** - Add an interest to a user's task
+- **remove_interest** - Remove an interest from a user's task
+- **add_connection** - Add a connection to a user's task
+- **remove_connection** - Remove a connection from a user's task
+- **list_tasks** - List all tasks (with optional limit)
+- **delete_task** - Delete a user's task
+
+## Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your AWS configuration
+   ```
+
+3. **Set up DynamoDB table:**
+   See task-server-cdk project
+
+## Usage
+
+### Local Development
+
+```bash
+npm run dev
 ```
 
-## Run the application
+### AWS Lambda Deployment
 
-```shell
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+The server is designed to run as an AWS Lambda function. See task-server-cdk project.
+
+## Task Schema
+
+Each task contains:
+
+```json
+{
+  "id": "string",
+  "created_at": "ISO 8601 timestamp",
+  "updated_at": "ISO 8601 timestamp",
+  "name": "string | null",
+  "location": "string | null", 
+  "job": "string | null",
+  "connections": ["array", "of", "strings"],
+  "interests": ["array", "of", "strings"]
+}
 ```
 
-## Deploy
-
-### Package Dependencies
-
-```shell
-cd ./.venv/lib/python3.13/site-packages
-mkdir -p /tmp/dist ; zip -r /tmp/dist/function.zip .
+## Testing and troubleshooting
+```bash
+   npx @modelcontextprotocol/inspector
 ```
 
-### Package Lambda
-
-```shell
-cd /tmp/dist
-zip -g function.zip lambda_function.py
-```
