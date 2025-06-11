@@ -7,7 +7,6 @@
   "scripts": {
     "clean": "rm -fr node_modules/",
     "deploy": "(cd ../task-server-cdk && npm run release)",
-    "start": "node src/index.mjs",
     "dev": "nodemon dev/local_server.mjs"
   },
   "dependencies": {
