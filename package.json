@@ -16,7 +16,7 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "aws-sdk": "^2.1500.0",
     "dotenv": "^16.0.0",
-    "middy-mcp": "github:anthony-ism/middy-mcp",
+    "middy-mcp": "github:anthony-ism/middy-mcp#main",
     "zod": "^3.22.0"
   },
   "devDependencies": {
