@@ -12,6 +12,7 @@ export class TaskModel {
     solutions = null,
     status = "not started"
   }) {
+    console.log("attempting to create a task")
     try {
       const taskId = uuidv4();
       const timestamp = new Date().toISOString();
@@ -54,6 +55,7 @@ export class TaskModel {
   }
 
   static async getTask(taskId) {
+    console.log("attempting to get a task")
     try {
       const params = {
         TableName: tableName,
@@ -73,6 +75,7 @@ export class TaskModel {
   }
 
   static async updateTask(taskId, updates) {
+    console.log("attempting to update a task")
     try {
       // Check if task exists first
       const existingTask = await this.getTask(taskId);
@@ -139,6 +142,7 @@ export class TaskModel {
   }
 
   static async deleteTask(taskId) {
+    console.log("attempting to delete a task")
     try {
       // Check if task exists first
       await this.getTask(taskId);
@@ -159,6 +163,7 @@ export class TaskModel {
   }
 
   static async listTasks(status = null, limit = 50) {
+    console.log("attempting to list a task")
     try {
       let params = {
         TableName: tableName,

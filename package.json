@@ -5,6 +5,8 @@
   "type": "module",
   "main": "src/index.mjs",
   "scripts": {
+    "clean": "rm -fr node_modules/",
+    "deploy": "(cd ../task-server-cdk && npm run release)",
     "start": "node src/index.mjs",
     "dev": "nodemon dev/local_server.mjs"
   },
@@ -14,7 +16,7 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "aws-sdk": "^2.1500.0",
     "dotenv": "^16.0.0",
-    "middy-mcp": "^1.0.0",
+    "middy-mcp": "github:anthony-ism/middy-mcp",
     "zod": "^3.22.0"
   },
   "devDependencies": {
