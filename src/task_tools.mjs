@@ -1,72 +1,39 @@
 import { z } from 'zod';
 import { TaskModel } from './task_model.mjs';
 
-// Define reusable schemas
-const TaskStatusSchema = z.enum(['not started', 'in progress', 'done', 'archived']);
-const UUIDSchema = z.string().uuid('Invalid task ID format');
-const TaskDescriptionSchema = z.string().min(1, 'Task description cannot be empty').max(500, 'Task description too long');
-const TimeToCompleteSchema = z.number().positive('Time to complete must be positive').max(10080, 'Time cannot exceed a week in minutes'); // Max 1 week in minutes
-const DeadlineSchema = z.string().datetime('Invalid deadline format - use ISO 8601 format');
-const SolutionsSchema = z.array(z.string().min(1, 'Solution cannot be empty')).max(10, 'Too many solutions - maximum 10 allowed');
-const LimitSchema = z.number().positive().max(100, 'Limit cannot exceed 100').default(50);
-
 export const taskTools = {
   // Create task tool
   createTask: {
     name: 'create_task',
-    description: 'Create a new task with optional time estimate, deadline, and solutions',
-    inputSchema: z.object({
-      task: TaskDescriptionSchema,
-      time_to_complete: TimeToCompleteSchema.optional(),
-      deadline: DeadlineSchema.optional(),
-      solutions: SolutionsSchema.optional(),
-      status: TaskStatusSchema.optional().default('not started')
-    }),
+    description: 'Create a new task',
+    inputSchema: {
+      task: z.string().describe('The task to be completed'),
+      time_to_complete: z.number().optional().describe('Estimated time to complete the task (minutes)'),
+      deadline: z.string().optional().describe('When the task needs to be completed by (ISO format)'),
+      solutions: z.array(z.string()).optional().describe('List of specific, actionable solutions'),
+      status: z.enum(['not started', 'in progress', 'done', 'archived']).optional().default('not started').describe('Current status of the task')
+    },
     handler: async ({ task, time_to_complete, deadline, solutions, status }) => {
       try {
-        // Additional validation for deadline
-        if (deadline) {
-          const deadlineDate = new Date(deadline);
-          const now = new Date();
-          if (deadlineDate <= now) {
-            return {
-              content: [{ 
-                type: 'text', 
-                text: JSON.stringify({
-                  error: 'Deadline must be in the future',
-                  provided_deadline: deadline
-                }, null, 2)
-              }]
-            };
-          }
-        }
-
         const result = await TaskModel.createTask({
-          task: task.trim(),
+          task,
           time_to_complete,
           deadline,
           solutions,
-          status: status || 'not started'
+          status
         });
         
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: true,
-              ...result
-            }, null, 2) 
+            text: JSON.stringify(result, null, 2) 
           }]
         };
       } catch (error) {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: false,
-              error: error.message,
-              timestamp: new Date().toISOString()
-            }, null, 2)
+            text: error.message 
           }]
         };
       }
@@ -76,10 +43,10 @@ export const taskTools = {
   // Get task tool
   getTask: {
     name: 'get_task',
-    description: 'Retrieve a specific task by its unique identifier',
-    inputSchema: z.object({
-      task_id: UUIDSchema
-    }),
+    description: 'Get a task by ID',
+    inputSchema: {
+      task_id: z.string().describe('The ID of the task to retrieve')
+    },
     handler: async ({ task_id }) => {
       try {
         const task = await TaskModel.getTask(task_id);
@@ -87,22 +54,14 @@ export const taskTools = {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: true,
-              task
-            }, null, 2) 
+            text: JSON.stringify(task, null, 2) 
           }]
         };
       } catch (error) {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: false,
-              error: error.message,
-              task_id,
-              timestamp: new Date().toISOString()
-            }, null, 2)
+            text: error.message 
           }]
         };
       }
@@ -112,48 +71,19 @@ export const taskTools = {
   // Update task tool
   updateTask: {
     name: 'update_task',
-    description: 'Update an existing task with new information',
-    inputSchema: z.object({
-      task_id: UUIDSchema,
-      task: TaskDescriptionSchema.optional(),
-      time_to_complete: TimeToCompleteSchema.optional(),
-      deadline: DeadlineSchema.optional(),
-      solutions: SolutionsSchema.optional(),
-      status: TaskStatusSchema.optional()
-    }).refine(
-      (data) => {
-        // Ensure at least one field is being updated
-        const { task_id, ...updates } = data;
-        return Object.keys(updates).length > 0;
-      },
-      {
-        message: "At least one field must be provided for update",
-        path: []
-      }
-    ),
+    description: 'Update an existing task',
+    inputSchema: {
+      task_id: z.string().describe('The ID of the task to update'),
+      task: z.string().optional().describe('The task to be completed'),
+      time_to_complete: z.number().optional().describe('Estimated time to complete the task (minutes)'),
+      deadline: z.string().optional().describe('When the task needs to be completed by (ISO format)'),
+      solutions: z.array(z.string()).optional().describe('List of specific, actionable solutions'),
+      status: z.enum(['not started', 'in progress', 'done', 'archived']).optional().describe('Current status of the task')
+    },
     handler: async ({ task_id, task, time_to_complete, deadline, solutions, status }) => {
       try {
-        // Additional validation for deadline
-        if (deadline) {
-          const deadlineDate = new Date(deadline);
-          const now = new Date();
-          if (deadlineDate <= now) {
-            return {
-              content: [{ 
-                type: 'text', 
-                text: JSON.stringify({
-                  success: false,
-                  error: 'Deadline must be in the future',
-                  provided_deadline: deadline,
-                  task_id
-                }, null, 2)
-              }]
-            };
-          }
-        }
-
         const updates = {};
-        if (task !== undefined) updates.task = task.trim();
+        if (task !== undefined) updates.task = task;
         if (time_to_complete !== undefined) updates.time_to_complete = time_to_complete;
         if (deadline !== undefined) updates.deadline = deadline;
         if (solutions !== undefined) updates.solutions = solutions;
@@ -165,7 +95,6 @@ export const taskTools = {
           content: [{ 
             type: 'text', 
             text: JSON.stringify({
-              success: true,
               task_id,
               ...result
             }, null, 2) 
@@ -175,12 +104,7 @@ export const taskTools = {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: false,
-              error: error.message,
-              task_id,
-              timestamp: new Date().toISOString()
-            }, null, 2)
+            text: error.message 
           }]
         };
       }
@@ -190,10 +114,10 @@ export const taskTools = {
   // Delete task tool
   deleteTask: {
     name: 'delete_task',
-    description: 'Permanently delete a task from the system',
-    inputSchema: z.object({
-      task_id: UUIDSchema
-    }),
+    description: 'Delete a task',
+    inputSchema: {
+      task_id: z.string().describe('The ID of the task to delete')
+    },
     handler: async ({ task_id }) => {
       try {
         const result = await TaskModel.deleteTask(task_id);
@@ -201,24 +125,14 @@ export const taskTools = {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: true,
-              message: result.message,
-              task_id,
-              timestamp: new Date().toISOString()
-            }, null, 2)
+            text: result.message 
           }]
         };
       } catch (error) {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: false,
-              error: error.message,
-              task_id,
-              timestamp: new Date().toISOString()
-            }, null, 2)
+            text: error.message 
           }]
         };
       }
@@ -228,11 +142,11 @@ export const taskTools = {
   // List tasks tool
   listTasks: {
     name: 'list_tasks',
-    description: 'Retrieve a list of tasks, optionally filtered by status',
-    inputSchema: z.object({
-      status: TaskStatusSchema.optional(),
-      limit: LimitSchema
-    }),
+    description: 'List all tasks or filter by status',
+    inputSchema: {
+      status: z.enum(['not started', 'in progress', 'done', 'archived']).optional().describe('Filter tasks by status'),
+      limit: z.number().optional().default(50).describe('Maximum number of tasks to return')
+    },
     handler: async ({ status, limit }) => {
       try {
         const result = await TaskModel.listTasks(status, limit);
@@ -240,29 +154,17 @@ export const taskTools = {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: true,
-              filter: status ? { status } : 'none',
-              limit,
-              ...result,
-              timestamp: new Date().toISOString()
-            }, null, 2) 
+            text: JSON.stringify(result, null, 2) 
           }]
         };
       } catch (error) {
         return {
           content: [{ 
             type: 'text', 
-            text: JSON.stringify({
-              success: false,
-              error: error.message,
-              filter: status ? { status } : 'none',
-              limit,
-              timestamp: new Date().toISOString()
-            }, null, 2)
+            text: error.message 
           }]
         };
       }
     }
-  },
+  }
 };

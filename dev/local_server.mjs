@@ -14,7 +14,6 @@ app.post('/mcp', async (req, res) => {
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
-    console.log("here");;
     res.on('close', () => {
       console.log('Request closed');
       transport.close();
@@ -22,6 +21,7 @@ app.post('/mcp', async (req, res) => {
     });
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
+    console.log(req.body);
   } catch (error) {
     console.error('Error handling MCP request:', error);
     if (!res.headersSent) {
