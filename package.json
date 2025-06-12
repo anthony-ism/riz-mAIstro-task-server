@@ -7,7 +7,8 @@
   "scripts": {
     "clean": "rm -fr node_modules/",
     "deploy": "(cd ../task-server-cdk && npm run release)",
-    "dev": "nodemon dev/local_server.mjs"
+    "dev": "nodemon dev/local_server.mjs",
+    "test": "vitest"
   },
   "dependencies": {
     "@middy/core": "^5.0.0",
@@ -19,8 +20,9 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "express": "^5.1.0",
     "nodemon": "^3.0.0",
-    "express": "^5.1.0"
+    "vitest": "^3.2.3"
   },
   "keywords": [
     "mcp",

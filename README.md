@@ -17,7 +17,7 @@ task-mcp-server/
 ├── src/
 │   └── config.mjs                  # Configuration management
 │   └── db_client.mjs               # DynamoDB client setup
-│   └── index.js                    # Main Lambda handler
+│   └── index.mjs                    # Main Lambda handler
 │   └── task_model.mjs              # Task data model and database operations
 │   └── task_tools.js               # MCP tool definitions
 │   └── server.mjs                  # MCP server initialization
